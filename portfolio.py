@@ -25,9 +25,10 @@ def save(entries: list) -> None:
 
 def add(args: argparse.Namespace) -> None:
     entries = load()
+    txn_type = "sell" if args.sell else "buy"
     entries.append(
         {
-            "type": args.type,
+            "type": txn_type,
             "ticker": args.ticker.upper(),
             "price": args.price,
             "units": args.units,
@@ -37,7 +38,7 @@ def add(args: argparse.Namespace) -> None:
     save(entries)
     total = args.price * args.units
     print(
-        f"{args.type.upper()} {args.units}× {args.ticker.upper()} "
+        f"{txn_type.upper()} {args.units}× {args.ticker.upper()} "
         f"@ ${args.price:.2f} = ${total:,.2f}"
     )
 
@@ -59,11 +60,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="ETF portfolio tracker")
     sub = parser.add_subparsers(dest="command")
 
-    p_add = sub.add_parser("add", help="record a transaction")
-    p_add.add_argument("--type", required=True, choices=["buy", "sell"])
-    p_add.add_argument("--ticker", required=True, help="ETF ticker (e.g. VOO)")
-    p_add.add_argument("--price", required=True, type=float, help="price per unit")
-    p_add.add_argument("--units", required=True, type=float, help="number of units")
+    p_add = sub.add_parser("add", help="record a buy (use --sell to record a sale)")
+    p_add.add_argument("ticker", help="ETF ticker (e.g. VOO)")
+    p_add.add_argument("price", type=float, help="price per unit")
+    p_add.add_argument("units", type=float, help="number of units")
+    p_add.add_argument("--sell", action="store_true", help="record as a sell instead of buy")
     p_add.set_defaults(func=add)
 
     p_show = sub.add_parser("show", help="list all transactions")
